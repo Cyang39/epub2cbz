@@ -17,7 +17,7 @@ function handleFiles(files: FileList) {
 
 async function handleEpub(file: File) {
   var zip = await JSZip.loadAsync(file);
-  var epubname = file.name.split(".").shift();
+  var epubname = file.name.split(".").slice(0, -1).join(".");
   var id = nanoid();
 
   // .ncx 文件是 epub 的目录，它是 XML 格式文本，
