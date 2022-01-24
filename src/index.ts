@@ -51,7 +51,13 @@ async function handleEpub(file: File) {
     var imgEntry = zip.file(imageList[i]);
     var ext = imgEntry.name.split(".").pop();
     myLog(`Processing [${file.name}]: ${i}/${imageList.length}`, id);
-    cbz.file(`${i}.${ext}`, await imgEntry.async("blob"));
+    const howLongNum = (num: number) => `${num}`.length;
+    const alignNum = (num, max) => {
+      let len =  howLongNum(num)
+      for(let i = 0; i < max - len; i++) num = "0" + num;
+      return num;
+    }
+    cbz.file(`${alignNum(i, howLongNum(imageList.length))}.${ext}`, await imgEntry.async("blob"));
   }
   myLog(`building [${epubname}.cbz], it will auto download after building finish...`, id);
   var cbzFile = await cbz.generateAsync({ type: "blob" });
