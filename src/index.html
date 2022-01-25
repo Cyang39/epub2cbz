@@ -9,10 +9,13 @@
 </head>
 
 <body>
-  <h3>Choose the local(s) epub file(s)</h3>
-  <p class="note">Note : your browser will process the epub file, don't choose a file too big !</p>
-  <p>⚠ Please use latest Chrome/Edge on PC. Other browsers like Saferi/Firefox may have bugs.</p>
-  <p><small>请使用最新的Chrome/Edge浏览器的PC版，其他浏览器没办法正常运行。</small></p>
+  <h3>Convert .epub file to .cbz file in browser</h3>
+  <p>This web application is usually used to convert comic/manga. Because CBZ usually loads faster than ePub.</p>
+  <p><small>这个web应用可以将epub文件转换到cbz文件。一般cbz读取更快（但会丢失元数据）。</small></p>
+  <p>✏️ You can select multiple files. You can use 'save as...' to use this page offline.</p>
+  <p><small>可以选择多个文件。可以通过“另存为...”离线使用本页面。</small></p>
+  <p>⚠️ Please use latest Chrome/Edge/Firefox on PC. Other browsers like Saferi may have bugs.</p>
+  <p><small>请使用最新的Chrome/Edge/Firefox浏览器的PC版，其他浏览器可能没办法正常运行。</small></p>
   <input type="file" id="file" name="file" multiple /><br />
   <div id="log"></div>
   <script type="module">import "./index.ts";</script>

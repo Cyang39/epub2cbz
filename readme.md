@@ -8,5 +8,5 @@ Please use a modern browser, such as the latest Chrome/Firefox/Opera/Edge.
 
 Used:
 - [FileSaver.js](https://github.com/eligrey/FileSaver.js)
-- [JSZip](https://github.com/Stuk/jszip)
+- ~~[JSZip](https://github.com/Stuk/jszip)~~ -> [zip.js](https://gildas-lormeau.github.io/zip.js/index.html)：zip.js is way more faster.
 - [nanoid](https://github.com/ai/nanoid)
