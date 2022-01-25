@@ -1,6 +1,7 @@
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { customAlphabet } from "nanoid";
+import OPFparser from "./OPFparser";
 const nanoid = customAlphabet('abcdefghijklmn', 5);
 
 function main() {
@@ -20,19 +21,19 @@ async function handleEpub(file: File) {
   var epubname = file.name.split(".").slice(0, -1).join(".");
   var id = nanoid();
 
-  // .ncx 文件是 epub 的目录，它是 XML 格式文本，
-  // 它指定页面的顺序和路径，
-  // 通常来说，一个 epub 只会有一个 .ncx 文件。
-  var ncxFiles = zip.file(/.+\.ncx/);
-  var ncxFile = ncxFiles.pop();
-  var ncxFilePath = dirOfEntry(ncxFile);
-  var ncxXML = await ncxFile.async("text");
+  // .ncx is not a stand for .epub: https://en.wikipedia.org/wiki/EPUB
+  // so I change to use .opf
+  var opfFile = zip.file(/.+\.opf/i).pop();
+  if (!opfFile) {
+    myLog("not found .opf file", id);
+    return -1;
+  }
+  var opfXML = await opfFile.async("text");
+  var opfObj = OPFparser(opfXML);
 
-  // 每个页面应该是 html 格式的文本，
-  // 漫画 epub 通常每页只有一个 image 标签。
-  var pageList = filenameListFromIndex(ncxXML)
-    .map(name => [ncxFilePath, name].filter(i => i).join("/"))
-    .map(fixPath);
+  var pageList = opfObj.package.spine.itemref.map(a => {
+    return opfObj.package.manifest.item.filter(b => b['@_id'] === a['@_idref']).pop()["@_href"];
+  })
 
   myLog("loading index of [" + file.name + "]...", id);
   var imageList = [];
@@ -51,28 +52,23 @@ async function handleEpub(file: File) {
     var imgEntry = zip.file(imageList[i]);
     var ext = imgEntry.name.split(".").pop();
     myLog(`Processing [${file.name}]: ${i}/${imageList.length}`, id);
-    const howLongNum = (num: number) => `${num}`.length;
-    const alignNum = (num, max) => {
-      let len =  howLongNum(num)
-      for(let i = 0; i < max - len; i++) num = "0" + num;
-      return num;
-    }
-    cbz.file(`${alignNum(i, howLongNum(imageList.length))}.${ext}`, await imgEntry.async("blob"));
+    cbz.file(`${alignNum(i, imageList.length)}.${ext}`, await imgEntry.async("blob"));
   }
   myLog(`building [${epubname}.cbz], it will auto download after building finish...`, id);
-  var cbzFile = await cbz.generateAsync({ type: "blob" });
+  var cbzFile = await cbz.generateAsync({ type: "blob", mimeType: "application/x-cbz" });
 
   saveAs(cbzFile, `${epubname}.cbz`);
 }
 
-function dirOfEntry(entry: JSZip.JSZipObject) {
-  return entry.name.split("/").slice(0, -1).join("/");
+function alignNum(num: number | string, max: number) {
+  var howLongNum = (num: number | string) => `${num}`.length;
+  let len = howLongNum(num)
+  for (let i = 0; i < howLongNum(max) - len; i++) num = "0" + num;
+  return num;
 }
 
-function filenameListFromIndex(index: string) {
-  return index.split("<content src=\"")
-    .slice(1)
-    .map(i => i.split("\"").shift());
+function dirOfEntry(entry: JSZip.JSZipObject) {
+  return entry.name.split("/").slice(0, -1).join("/");
 }
 
 function fixPath(str: string) {
