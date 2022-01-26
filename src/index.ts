@@ -12,7 +12,8 @@ function main() {
 
 function handleFiles(files: FileList) {
   for (var file of files) {
-    if (file.type === "application/epub+zip") handleEpub(file)
+    // remove file type check.
+    handleEpub(file)
   }
 }
 
@@ -35,11 +36,14 @@ async function handleEpub(file: File) {
       var pageFile = entries.find(entry => entry.filename === page);
       var pageHTML = await pageFile.getData(new zip.TextWriter());
       var pagePath = dirOfEntry(pageFile);
-      var imagePath = pageHTML.split("<img src=\"")[1].split("\"")[0];
+      var imagePath = pageHTML.split("<img src=\"")[1]?.split("\"")[0];
       imagePath = [pagePath, imagePath].filter(i => i).join("/");
       imagePath = fixPath(imagePath);
       imageList.push(imagePath);
     }
+
+    // remove page not include image.
+    imageList = imageList.filter(i => i);
 
     // use a BlobWriter to store with a ZipWriter the zip into a Blob object
     var blobWriter = new zip.BlobWriter("application/x-cbz");
