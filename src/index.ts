@@ -5,6 +5,7 @@ import OPFparser from "./OPFparser";
 const nanoid = customAlphabet('abcdefghijklmn', 5);
 
 function main() {
+  document.getElementById("ver").innerText = "[v0.2.3]";
   document.querySelector("#file").addEventListener("change", function (evt) {
     handleFiles((<HTMLInputElement>evt.target).files)
   })
@@ -21,10 +22,25 @@ async function handleEpub(file: File) {
   var epubname = file.name.split(".").slice(0, -1).join(".");
   var id = nanoid();
   var reader = new zip.ZipReader(new zip.BlobReader(file));
-  var entries = await reader.getEntries();
+  var entries;
+  try {
+    entries = await reader.getEntries();
+  } catch(err) {
+    myLog(`❌ Error: [${file.name}] is not a stand epub file.`, id);
+    return -1;
+  }
   if (entries.length) {
     var opfFile = entries.find(entry => entry.filename.match(/.+\.opf/i));
-    var opfXML = await opfFile.getData(new zip.TextWriter());
+    var opfXML;
+    try {
+      opfXML = await opfFile.getData(new zip.TextWriter());
+    } catch(err) {
+      if(file.type === "application/epub+zip")
+        myLog(`❌ Error: Can't find the .opf file in ${file.name}. If your epub file is ocf/ops, it not support yet.`, id);
+      else
+        myLog(`❌ Error: [${file.name}] may not be an epub file. Please check it.`, id);
+      return -1;
+    }
     var opfObj = OPFparser(opfXML);
     var pageList = opfObj.package.spine.itemref.map(a => {
       return opfObj.package.manifest.item.filter(b => b['@_id'] === a['@_idref']).pop()["@_href"];
