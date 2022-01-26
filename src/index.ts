@@ -5,7 +5,7 @@ import OPFparser from "./OPFparser";
 const nanoid = customAlphabet('abcdefghijklmn', 5);
 
 function main() {
-  document.getElementById("ver").innerText = "[v0.2.3]";
+  document.getElementById("ver").innerText = "[v0.2.4]";
   document.querySelector("#file").addEventListener("change", function (evt) {
     handleFiles((<HTMLInputElement>evt.target).files)
   })
@@ -45,6 +45,14 @@ async function handleEpub(file: File) {
     var pageList = opfObj.package.spine.itemref.map(a => {
       return opfObj.package.manifest.item.filter(b => b['@_id'] === a['@_idref']).pop()["@_href"];
     });
+
+    var ncxFile = entries.find(entry => entry.filename.match(/.+\.ncx/i));
+    var ncxPath = ncxFile.filename.split("/").slice(0, -1).join("/");
+    var ncxXML = await ncxFile.getData(new zip.TextWriter());
+    var ncxObj = OPFparser(ncxXML);
+    var pageList2 = ncxObj?.ncx?.navMap?.navPoint.map(i => fixPath([ncxPath, i.content?.["@_src"]].join("/")))
+    
+    pageList = pageList.length > pageList2.length ? pageList : pageList2;
 
     myLog("loading index of [" + file.name + "]...", id);
     var imageList = [];
