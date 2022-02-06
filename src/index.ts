@@ -5,7 +5,7 @@ import { parseXML, dirOfEntry, alignNum, fixPath } from "./util";
 const nanoid = customAlphabet('abcdefghijklmn', 5);
 
 function main() {
-  document.getElementById("ver").innerText = "[v0.2.5]";
+  document.getElementById("ver").innerText = "[v0.2.6]";
   document.querySelector("#file").addEventListener("change", function (evt) {
     for(var file of (<HTMLInputElement>evt.target).files) {
       handleEpub(file)
@@ -54,8 +54,10 @@ async function handleEpub(file: File) {
     var ncxPath = ncxFile.filename.split("/").slice(0, -1).join("/");
     var ncxXML = await ncxFile.getData(new zip.TextWriter());
     var ncxObj = parseXML(ncxXML);
-    var pageList2 = ncxObj?.ncx?.navMap?.navPoint.map(i => fixPath([ncxPath, i.content?.["@_src"]].join("/")))
-    
+    var pageList2 = ncxObj?.ncx?.navMap?.navPoint?.map ?
+      ncxObj?.ncx?.navMap?.navPoint?.map(i => fixPath([ncxPath, i.content?.["@_src"]].join("/"))) :
+      []
+
     pageList = pageList.length > pageList2.length ? pageList : pageList2;
 
     myLog("Loading index of [" + file.name + "]...", id);
