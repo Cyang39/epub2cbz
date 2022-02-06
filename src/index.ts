@@ -5,7 +5,7 @@ import { parseXML, dirOfEntry, alignNum, fixPath } from "./util";
 const nanoid = customAlphabet('abcdefghijklmn', 5);
 
 function main() {
-  document.getElementById("ver").innerText = "[v0.2.6]";
+  document.getElementById("ver").innerText = "[v0.2.7]";
   document.querySelector("#file").addEventListener("change", function (evt) {
     for (var file of (<HTMLInputElement>evt.target).files) {
       handleEpub(file)
@@ -101,8 +101,7 @@ async function handleEpub(file: File) {
       var _i = i;
       imgEntry.getData(new zip.BlobWriter(`image/${ext.toLocaleLowerCase()}`)).then(imgBlob => {
         writer.add(`${alignNum(_i, imageList.length)}.${ext}`, new zip.BlobReader(imgBlob)).then(() => {
-          maxNum = maxNum > _i ? maxNum : _i;
-          myLog(`Processing [${file.name}]: ${maxNum}/${imageList.length}`, id);
+          myLog(`Processing [${file.name}]: ${maxNum++}/${imageList.length}`, id);
           resolve();
         })
       })
