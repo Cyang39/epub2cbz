@@ -1,23 +1,21 @@
 import * as zip from "@zip.js/zip.js";
 import { saveAs } from "file-saver";
-import { customAlphabet } from "nanoid";
 import { parseXML, dirOfEntry, alignNum, fixPath } from "./util";
-const nanoid = customAlphabet('abcdefghijklmn', 5);
 
-function main() {
-  document.getElementById("ver").innerText = "[v0.2.7]";
-  document.querySelector("#file").addEventListener("change", function (evt) {
-    for (var file of (<HTMLInputElement>evt.target).files) {
-      handleEpub(file)
+async function main() {
+  document.getElementById("ver").innerText = "[v0.2.8]";
+  document.querySelector("#file").addEventListener("change", async function (evt) {
+    const files = (<HTMLInputElement>evt.target).files;
+    Array.from(files).forEach((t, i) => myLog(`Waiting ${t.name} ....`, `_${i}`));
+    for (let i = 0; i < files.length; i++) {
+      await handleEpub(files[i], `_${i}`);
     }
   })
 }
 
-async function handleEpub(file: File) {
+async function handleEpub(file: File, id: string) {
   var epubname = file.name.split(".").slice(0, -1).join(".");
-  var id = nanoid();
   var reader = new zip.ZipReader(new zip.BlobReader(file));
-
 
   var entries: any[];
   try {
